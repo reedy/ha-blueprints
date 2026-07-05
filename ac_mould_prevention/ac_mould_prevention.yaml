@@ -38,11 +38,9 @@ trigger:
   - trigger: state
     entity_id: !input target_climate
     to: "off"
-    from: "cool"
-  - trigger: state
-    entity_id: !input target_climate
-    to: "off"
-    from: "dry"
+    from:
+      - dry
+      - fan_only
 
 action:
   # 1. Catch the off command and switch to fan_only instead
