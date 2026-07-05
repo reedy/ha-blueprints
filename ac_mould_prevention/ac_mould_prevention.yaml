@@ -20,6 +20,17 @@ blueprint:
           max: 60
           unit_of_measurement: minutes
           mode: slider
+    fan_speed:
+      name: Drying Fan Speed
+      description: Select the fan speed to use during the drying cycle.
+      default: "low"
+      selector:
+        select:
+          options:
+            - "low"
+            - "medium"
+            - "high"
+            - "auto"
 
 mode: single
 
@@ -41,18 +52,25 @@ action:
     data:
       hvac_mode: fan_only
 
-  # 2. Wait for the user-defined drying period
+  # 2. Set the user-defined fan speed
+  - action: climate.set_fan_mode
+    target:
+      entity_id: !input target_climate
+    data:
+      fan_mode: !input fan_speed
+
+  # 3. Wait for the user-defined drying period
   - delay:
       minutes: !input drying_time
 
-  # 3. Restore the original state ('cool' or 'dry') right before final power down
+  # 4. Restore the original state ('cool' or 'dry') right before final power down
   - action: climate.set_hvac_mode
     target:
       entity_id: !input target_climate
     data:
       hvac_mode: "{{ trigger.from_state.state }}"
 
-  # 4. Finally turn the unit completely off
+  # 5. Finally turn the unit completely off
   - action: climate.turn_off
     target:
       entity_id: !input target_climate
