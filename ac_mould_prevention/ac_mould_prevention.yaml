@@ -39,8 +39,9 @@ trigger:
     entity_id: !input target_climate
     to: "off"
     from:
+      - cool
       - dry
-      - fan_only
+      - heat_cool
 
 action:
   # 1. Catch the off command and switch to fan_only instead
