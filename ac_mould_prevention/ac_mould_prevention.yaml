@@ -45,7 +45,14 @@ action:
   - delay:
       minutes: !input drying_time
 
-  # 3. Finally turn the unit completely off
+  # 3. Restore the original state ('cool' or 'dry') right before final power down
+  - action: climate.set_hvac_mode
+    target:
+      entity_id: !input target_climate
+    data:
+      hvac_mode: "{{ trigger.from_state.state }}"
+
+  # 4. Finally turn the unit completely off
   - action: climate.turn_off
     target:
       entity_id: !input target_climate
