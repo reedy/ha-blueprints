@@ -1,0 +1,51 @@
+blueprint:
+  name: AC Mould Prevention (Fan Drying Cycle)
+  description: Automatically intercepts an AC turn-off command, runs the fan for a set period to dry out condensation, and then fully powers down.
+  domain: automation
+  input:
+    target_climate:
+      name: Climate Device
+      description: The AC or heat pump unit to control.
+      selector:
+        entity:
+          filter:
+            - domain: climate
+    drying_time:
+      name: Drying Duration
+      description: How long to run the fan (in minutes) before turning off the system.
+      default: 10
+      selector:
+        number:
+          min: 1
+          max: 60
+          unit_of_measurement: minutes
+          mode: slider
+
+mode: single
+
+trigger:
+  - trigger: state
+    entity_id: !input target_climate
+    to: "off"
+    from: "cool"
+  - trigger: state
+    entity_id: !input target_climate
+    to: "off"
+    from: "dry"
+
+action:
+  # 1. Catch the off command and switch to fan_only instead
+  - action: climate.set_hvac_mode
+    target:
+      entity_id: !input target_climate
+    data:
+      hvac_mode: fan_only
+
+  # 2. Wait for the user-defined drying period
+  - delay:
+      minutes: !input drying_time
+
+  # 3. Finally turn the unit completely off
+  - action: climate.turn_off
+    target:
+      entity_id: !input target_climate
