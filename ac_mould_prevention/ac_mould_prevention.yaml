@@ -62,7 +62,7 @@ action:
   - delay:
       minutes: !input drying_time
 
-  # 4. Restore the original state ('cool' or 'dry') right before final power down
+  # 4. Restore the original state ('cool', 'dry' or 'heat_cool') right before final power down
   - action: climate.set_hvac_mode
     target:
       entity_id: !input target_climate
