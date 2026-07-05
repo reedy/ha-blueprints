@@ -1,0 +1,70 @@
+blueprint:
+  name: AWTRIX - Send Power Usage
+  description: Publishes a power usage reading to an AWTRIX LED matrix display via MQTT every minute.
+  domain: automation
+  input:
+    power_sensor:
+      name: Power Sensor
+      description: Sensor entity reporting grid active power (numeric, in kW).
+      selector:
+        entity:
+          filter:
+            - domain: sensor
+    awtrix_device:
+      name: AWTRIX Device Topic Prefix
+      description: The MQTT topic prefix for your AWTRIX device (e.g. awtrix_19aec4).
+      selector:
+        text:
+    app_name:
+      name: App Name
+      description: The custom app name to use on the AWTRIX display.
+      default: power
+      selector:
+        text:
+    icon:
+      name: Icon ID
+      description: The AWTRIX icon ID to show next to the value.
+      default: "44432"
+      selector:
+        text:
+    unit:
+      name: Unit Label
+      description: Unit label appended to the displayed value.
+      default: "KW"
+      selector:
+        text:
+    color:
+      name: Text Color
+      description: RGB color for the displayed text.
+      default: [255, 0, 0]
+      selector:
+        color_rgb:
+
+mode: single
+
+variables:
+  power_sensor_entity: !input power_sensor
+  awtrix_device_topic: !input awtrix_device
+  app_name_value: !input app_name
+  icon_value: !input icon
+  unit_value: !input unit
+  color_value: !input color
+
+trigger:
+  - trigger: time_pattern
+    seconds: "0"
+
+action:
+  - action: mqtt.publish
+    data:
+      qos: "0"
+      topic: "{{ awtrix_device_topic }}/custom/{{ app_name_value }}"
+      payload: >-
+        {
+          "text": "{{ (states(power_sensor_entity) | float) | round(1) }}{{ unit_value }}",
+          "textCase": 2,
+          "color": {{ color_value }},
+          "icon": "{{ icon_value }}",
+          "noScroll": true
+        }
+      evaluate_payload: false
